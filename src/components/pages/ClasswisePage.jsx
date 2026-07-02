@@ -75,7 +75,7 @@ export default function ClasswisePage({ data, selectedCenter, selectedGrade, set
       <div className="rounded-2xl bg-slate-900 px-6 py-5 text-white shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm text-slate-300">{selectedCenter}</p>
+            <p className="text-sm text-slate-300">{Array.isArray(selectedCenter) ? (selectedCenter.some((c) => c === 'All Centers') ? 'All Centers' : selectedCenter.join(', ')) : selectedCenter}</p>
             <h2 className="mt-1 text-xl font-semibold">{selectedGrade} performance snapshot</h2>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">

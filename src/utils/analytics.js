@@ -80,7 +80,15 @@ export function resolveCenterName(row, centerLookup) {
 }
 
 export function filterRowsByCenter(rows, selectedCenter, centerLookup) {
-  if (!selectedCenter || sameText(selectedCenter, 'All Centers')) return rows
+  if (!selectedCenter) return rows
+
+  // Handle array of selected centers
+  if (Array.isArray(selectedCenter)) {
+    if (selectedCenter.some((c) => sameText(c, 'All Centers'))) return rows
+    return rows.filter((row) => selectedCenter.some((sel) => sameText(resolveCenterName(row, centerLookup), sel)))
+  }
+
+  if (sameText(selectedCenter, 'All Centers')) return rows
   return rows.filter((row) => sameText(resolveCenterName(row, centerLookup), selectedCenter))
 }
 

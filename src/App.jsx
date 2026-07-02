@@ -12,7 +12,8 @@ import { useSheetData } from './hooks/useSheetData'
 function App() {
   const { data, loading, error, lastUpdated, refresh } = useSheetData()
   const [activePage, setActivePage] = useState('overview')
-  const [selectedCenter, setSelectedCenter] = useState('All Centers')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [selectedCenter, setSelectedCenter] = useState(['All Centers'])
   const [classwiseGrade, setClasswiseGrade] = useState('Nursery')
   const [studentGrade, setStudentGrade] = useState('All Grades')
   const [studentSearch, setStudentSearch] = useState('')
@@ -81,9 +82,11 @@ function App() {
         loading={loading}
         lastUpdated={lastUpdated}
         refresh={refresh}
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
       />
 
-      <main className="ml-64 min-h-screen overflow-y-auto">
+      <main className={`${sidebarCollapsed ? 'ml-16' : 'ml-64'} relative z-0 min-h-screen overflow-y-auto transition-[margin-left] duration-300`}>
         <div className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50/95 backdrop-blur">
           <div className="px-8 py-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -92,8 +95,49 @@ function App() {
                 <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">{pageMeta.title}</h1>
                 <p className="mt-2 max-w-3xl text-sm text-slate-500">{pageMeta.subtitle}</p>
               </div>
-              <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-sm">
-                {selectedCenter}
+              <div className="relative">
+                <details className="relative">
+                  <summary className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-sm cursor-pointer list-none">
+                    {Array.isArray(selectedCenter) && selectedCenter.some((c) => c === 'All Centers')
+                      ? 'All Centers'
+                      : Array.isArray(selectedCenter) && selectedCenter.length
+                        ? selectedCenter.join(', ')
+                        : 'All Centers'}
+                  </summary>
+                  <div className="absolute right-0 z-20 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-3 shadow-lg">
+                    <label className="flex items-center gap-2 mb-2">
+                      <input
+                        type="checkbox"
+                        checked={Array.isArray(selectedCenter) && selectedCenter.some((c) => c === 'All Centers')}
+                        onChange={() => setSelectedCenter(['All Centers'])}
+                      />
+                      <span className="text-sm">All Centers</span>
+                    </label>
+                    <div className="max-h-56 overflow-auto">
+                      {centerOptions.map((center) => (
+                        <label key={center} className="flex items-center gap-2 mb-2">
+                          <input
+                            type="checkbox"
+                            checked={Array.isArray(selectedCenter) && selectedCenter.some((c) => c === center)}
+                            onChange={() => {
+                              setSelectedCenter((prev) => {
+                                const prevArray = Array.isArray(prev) ? prev.slice() : []
+                                // if All Centers is selected, start fresh
+                                const base = prevArray.some((c) => c === 'All Centers') ? [] : prevArray
+                                if (base.some((c) => c === center)) {
+                                  const next = base.filter((c) => c !== center)
+                                  return next.length ? next : ['All Centers']
+                                }
+                                return [...base, center]
+                              })
+                            }}
+                          />
+                          <span className="text-sm">{center}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </details>
               </div>
             </div>
           </div>
